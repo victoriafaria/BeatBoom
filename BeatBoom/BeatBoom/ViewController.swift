@@ -87,13 +87,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         let nodeA = contact.nodeA
         let nodeB = contact.nodeB
         
-        if nodeA.physicsBody?.categoryBitMask == CollisionCategory.projectilesCategory.rawValue
-            && nodeB.physicsBody?.categoryBitMask == CollisionCategory.killzoneCategory.rawValue {
+        if nodeA.physicsBody?.categoryBitMask == CollisionCategory.projectilesCategory
+            && nodeB.physicsBody?.categoryBitMask == CollisionCategory.killzoneCategory {
             objectA = nodeA
             objectB = nodeB
             collisionType = 1
-        } else if nodeB.physicsBody?.categoryBitMask == CollisionCategory.projectilesCategory.rawValue
-            && nodeA.physicsBody?.categoryBitMask == CollisionCategory.killzoneCategory.rawValue {
+        } else if nodeB.physicsBody?.categoryBitMask == CollisionCategory.projectilesCategory
+            && nodeA.physicsBody?.categoryBitMask == CollisionCategory.killzoneCategory {
             objectA = nodeB
             objectB = nodeA
             collisionType = 1
@@ -139,9 +139,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         node.physicsBody = SCNPhysicsBody(type: .dynamic, shape: nil)
         node.physicsBody?.isAffectedByGravity = false
         
-        node.physicsBody?.categoryBitMask = CollisionCategory.projectilesCategory.rawValue
-        node.physicsBody?.contactTestBitMask = CollisionCategory.playZoneCategory.rawValue
-        node.physicsBody?.collisionBitMask = CollisionCategory.killzoneCategory.rawValue
+        node.physicsBody?.categoryBitMask = CollisionCategory.projectilesCategory
+        node.physicsBody?.contactTestBitMask = CollisionCategory.playZoneCategory | CollisionCategory.killzoneCategory
+        node.physicsBody?.collisionBitMask = 0
         
         return node
     }
