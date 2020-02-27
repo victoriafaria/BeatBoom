@@ -22,7 +22,7 @@ public struct CollisionCategory  {
     static let projectilesCategory: Int =              0b1 // 1
     static let playZoneCategory: Int =               0b10 // 2
     static let killzoneCategory: Int =              0b100 // 4
-//    static let tree: UInt32 =             0b1000 // 8
+    static let playerFinger: Int =             0b1000 // 8
 //    static let tree2: UInt32 =           0b10000 // 16
 //    static let men: UInt32 =            0b100000 //32
 //    static let background: UInt32 =    0b1000000 // 64

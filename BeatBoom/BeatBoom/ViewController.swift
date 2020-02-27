@@ -16,6 +16,27 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     
     @IBOutlet var sceneView: ARSCNView!
     
+    @IBAction func swipeHandler(_ sender: Any) {
+        guard let gestureRecognizer = sender as? UISwipeGestureRecognizer else {return}
+        
+        let direction = gestureRecognizer.direction
+        switch direction {
+        case .right:
+            print("swipe right")
+            break
+        case .left:
+            print("swipe left")
+            break
+        case .up:
+            print("swipe up")
+            break
+        case .down:
+            print("swipe down")
+            break
+        default:
+            break
+        }
+    }
     var spawnPoints: [SCNNode] = []
     var projectiles: [SCNNode] = []
     var timer: Timer?
@@ -59,8 +80,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
             return node.childNodes
         })
         
-//        let hud = SKScene(fileNamed: "HUD.sks")
-//        sceneView.overlaySKScene = hud
+        //        let hud = SKScene(fileNamed: "HUD.sks")
+        //        sceneView.overlaySKScene = hud
         setupProjectiles()
         
         return scene
@@ -90,18 +111,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         if nodeA.physicsBody?.categoryBitMask == CollisionCategory.projectilesCategory
             && nodeB.physicsBody?.categoryBitMask == CollisionCategory.killzoneCategory {
             objectA = nodeA
-            objectB = nodeB
             collisionType = 1
         } else if nodeB.physicsBody?.categoryBitMask == CollisionCategory.projectilesCategory
             && nodeA.physicsBody?.categoryBitMask == CollisionCategory.killzoneCategory {
             objectA = nodeB
-            objectB = nodeA
             collisionType = 1
+        }else if nodeA.physicsBody?.categoryBitMask == CollisionCategory.projectilesCategory
+            && nodeB.physicsBody?.categoryBitMask == CollisionCategory.playZoneCategory {
+            objectA = nodeA
+            collisionType = 2
+        } else if nodeB.physicsBody?.categoryBitMask == CollisionCategory.projectilesCategory
+            && nodeA.physicsBody?.categoryBitMask == CollisionCategory.playZoneCategory {
+            objectA = nodeB
+            collisionType = 2
         }
         
         switch collisionType {
         case 1:
             objectA.removeFromParentNode()
+            break
+        case 2:
+            guard let projectile = objectA as? Projectile else {return}
+            projectile.isInsidePlayzone = true
             break
         default:
             break
@@ -125,13 +156,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         
         let nodeDirection = SCNVector3(killzone.position.x, killzone.position.y, velocity)
         node.physicsBody?.applyForce(nodeDirection, asImpulse: true)
-            
+        
         
         
     }
     
     func createProjectile() -> SCNNode  {
-
+        
         let node = projectiles[Int.random(in: 0..<projectiles.count)].clone()
         node.scale = SCNVector3(0.5, 0.5, 0.5)
         node.name = "projectile"
