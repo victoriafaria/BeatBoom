@@ -18,25 +18,53 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     
     @IBAction func swipeHandler(_ sender: Any) {
         guard let gestureRecognizer = sender as? UISwipeGestureRecognizer else {return}
-        
-        let direction = gestureRecognizer.direction
-        switch direction {
-        case .right:
-            print("swipe right")
-            break
-        case .left:
-            print("swipe left")
-            break
-        case .up:
-            print("swipe up")
-            break
-        case .down:
-            print("swipe down")
-            break
-        default:
-            break
+        var projectiles: [Projectile] = []
+        spawnPoints.forEach { (spawnPoint) in
+            projectiles.append(contentsOf:  spawnPoint.childNodes.compactMap { (node) -> Projectile? in
+                return Projectile(node)
+            })
         }
+        projectiles.forEach { (element) in
+            print("direction: \(element.direction) \n swipeDirection: \(gestureRecognizer.direction)  \n  isInPlayzone: \(element.isInsidePlayzone)")
+            if element.direction == gestureRecognizer.direction {
+                element.node.removeFromParentNode()
+            }
+        }
+        
+//        switch gestureRecognizer.direction {
+//        case .right:
+//
+//            print("swipe right")
+//            break
+//        case .left:
+//            projectiles.forEach { (element) in
+//                if element.direction == .left {
+//                    element.node.removeFromParentNode()
+//                }
+//            }
+//            print("swipe left")
+//            break
+//        case .up:
+//            projectiles.forEach { (element) in
+//                if element.direction == .up {
+//                    element.node.removeFromParentNode()
+//                }
+//            }
+//            print("swipe up")
+//            break
+//        case .down:
+//            projectiles.forEach { (element) in
+//                if element.direction == .down {
+//                    element.node.removeFromParentNode()
+//                }
+//            }
+//            print("swipe down")
+//            break
+//        default:
+//            break
+//        }
     }
+    
     var spawnPoints: [SCNNode] = []
     var projectiles: [SCNNode] = []
     var timer: Timer?
@@ -90,6 +118,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     private func setupProjectiles() {
         if let squareScene = SCNScene(named: "art.scnassets/Projectiles/square.scn"),
             let square =  squareScene.rootNode.childNode(withName: "square", recursively: true){
+            
             projectiles.append(square)
         }
         
@@ -144,24 +173,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         let chooseSpawnPointIndex = Int.random(in: 0..<spawnPointsCount)
         let spawnPoint = spawnPoints[chooseSpawnPointIndex]
         
-        let node = createProjectile()
+        let projectile = createProjectile()
         
         // recuperando o nó da killzone no mundo
         guard let killzone = sceneView.scene.rootNode.childNode(withName: "killzone reference", recursively: false)  else { return }
-        node.worldPosition = killzone.worldPosition
+        projectile.node.worldPosition = killzone.worldPosition
         
-        spawnPoint.addChildNode(node)
+        spawnPoint.addChildNode(projectile.node)
         
         let velocity = killzone.position.z*1.5
         
         let nodeDirection = SCNVector3(killzone.position.x, killzone.position.y, velocity)
-        node.physicsBody?.applyForce(nodeDirection, asImpulse: true)
+        projectile.node.physicsBody?.applyForce(nodeDirection, asImpulse: true)
         
         
         
     }
     
-    func createProjectile() -> SCNNode  {
+    func createProjectile() -> Projectile  {
         
         let node = projectiles[Int.random(in: 0..<projectiles.count)].clone()
         node.scale = SCNVector3(0.5, 0.5, 0.5)
@@ -173,8 +202,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         node.physicsBody?.categoryBitMask = CollisionCategory.projectilesCategory
         node.physicsBody?.contactTestBitMask = CollisionCategory.playZoneCategory | CollisionCategory.killzoneCategory
         node.physicsBody?.collisionBitMask = 0
+        let projectile = Projectile(node)
         
-        return node
+        return projectile
     }
     
     
