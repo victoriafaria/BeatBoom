@@ -18,55 +18,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     
     @IBAction func swipeHandler(_ sender: Any) {
         guard let gestureRecognizer = sender as? UISwipeGestureRecognizer else {return}
-        var projectiles: [Projectile] = []
-        spawnPoints.forEach { (spawnPoint) in
-            projectiles.append(contentsOf:  spawnPoint.childNodes.compactMap { (node) -> Projectile? in
-                return Projectile(node)
-            })
-        }
-        projectiles.forEach { (element) in
-            print("direction: \(element.direction) \n swipeDirection: \(gestureRecognizer.direction)  \n  isInPlayzone: \(element.isInsidePlayzone)")
-            if element.direction == gestureRecognizer.direction {
-                element.node.removeFromParentNode()
-            }
-        }
-        
-//        switch gestureRecognizer.direction {
-//        case .right:
-//
-//            print("swipe right")
-//            break
-//        case .left:
-//            projectiles.forEach { (element) in
-//                if element.direction == .left {
-//                    element.node.removeFromParentNode()
-//                }
-//            }
-//            print("swipe left")
-//            break
-//        case .up:
-//            projectiles.forEach { (element) in
-//                if element.direction == .up {
-//                    element.node.removeFromParentNode()
-//                }
-//            }
-//            print("swipe up")
-//            break
-//        case .down:
-//            projectiles.forEach { (element) in
-//                if element.direction == .down {
-//                    element.node.removeFromParentNode()
-//                }
-//            }
-//            print("swipe down")
-//            break
-//        default:
-//            break
-//        }
+        swipeHandler(gestureRecognizer)
     }
     
     var spawnPoints: [SCNNode] = []
-    var projectiles: [SCNNode] = []
+    var projectileTypes: [SCNNode] = []
+    var projectiles: [Projectile] = []
     var timer: Timer?
     
     override func viewDidLoad() {
@@ -115,16 +72,31 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         return scene
     }
     
+    fileprivate func swipeHandler(_ gestureRecognizer: UISwipeGestureRecognizer) {
+//        var projectiles: [Projectile] = []
+//        spawnPoints.forEach { (spawnPoint) in
+//            projectiles.append(contentsOf:  spawnPoint.childNodes.compactMap { (node) -> Projectile? in
+//                return Projectile(node)
+//            })
+//        }
+        projectiles.forEach { (element) in
+            print("direction: \(element.direction) \n swipeDirection: \(gestureRecognizer.direction)  \n  isInPlayzone: \(element.isInsidePlayzone)")
+            if element.direction == gestureRecognizer.direction && element.isInsidePlayzone {
+                element.node.removeFromParentNode()
+            }
+        }
+    }
+    
     private func setupProjectiles() {
         if let squareScene = SCNScene(named: "art.scnassets/Projectiles/square.scn"),
             let square =  squareScene.rootNode.childNode(withName: "square", recursively: true){
             
-            projectiles.append(square)
+            projectileTypes.append(square)
         }
         
         if let sphereScene = SCNScene(named: "art.scnassets/Projectiles/sphere.scn"),
             let sphere =  sphereScene.rootNode.childNode(withName: "sphere", recursively: true){
-            projectiles.append(sphere)
+            projectileTypes.append(sphere)
         }
     }
     
@@ -160,8 +132,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
             objectA.removeFromParentNode()
             break
         case 2:
-            guard let projectile = objectA as? Projectile else {return}
-            projectile.isInsidePlayzone = true
+            let projectile = projectiles.first { (element) -> Bool in
+                element.node.isEqual(objectA)
+            }
+            projectile?.isInsidePlayzone = true
+            print(projectile)
             break
         default:
             break
@@ -180,6 +155,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         projectile.node.worldPosition = killzone.worldPosition
         
         spawnPoint.addChildNode(projectile.node)
+        projectiles.append(projectile)
         
         let velocity = killzone.position.z*1.5
         
@@ -192,7 +168,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     
     func createProjectile() -> Projectile  {
         
-        let node = projectiles[Int.random(in: 0..<projectiles.count)].clone()
+        let node = projectileTypes[Int.random(in: 0..<projectileTypes.count)].clone()
         node.scale = SCNVector3(0.5, 0.5, 0.5)
         node.name = "projectile"
         

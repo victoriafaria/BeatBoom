@@ -8,11 +8,16 @@
 
 import SceneKit
 
-class Projectile {
+class Projectile: SCNNode {
     
     init(_ node: SCNNode, _ direction: UISwipeGestureRecognizer.Direction = .right) {
         self.node = node
         self.direction = direction
+        super.init()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     var node: SCNNode
@@ -30,5 +35,9 @@ class Projectile {
                 self.isInsidePlayzone = false
             }
         }
+    }
+    
+    static func == (lhs:Projectile, rhs:Projectile) -> Bool {
+        return lhs.node.isEqual(rhs.node) && lhs.direction == rhs.direction
     }
 }
