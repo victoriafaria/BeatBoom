@@ -68,17 +68,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         //        let hud = SKScene(fileNamed: "HUD.sks")
         //        sceneView.overlaySKScene = hud
         setupProjectiles()
-        
+        scene.isPaused = false
         return scene
     }
     
     fileprivate func swipeHandler(_ gestureRecognizer: UISwipeGestureRecognizer) {
-//        var projectiles: [Projectile] = []
-//        spawnPoints.forEach { (spawnPoint) in
-//            projectiles.append(contentsOf:  spawnPoint.childNodes.compactMap { (node) -> Projectile? in
-//                return Projectile(node)
-//            })
-//        }
         projectiles.forEach { (element) in
             print("direction: \(element.direction) \n swipeDirection: \(gestureRecognizer.direction)  \n  isInPlayzone: \(element.isInsidePlayzone)")
             if element.direction == gestureRecognizer.direction && element.isInsidePlayzone {
@@ -96,7 +90,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         
         if let sphereScene = SCNScene(named: "art.scnassets/Projectiles/sphere.scn"),
             let sphere =  sphereScene.rootNode.childNode(withName: "sphere", recursively: true){
-            projectileTypes.append(sphere)
+//            projectileTypes.append(sphere)
         }
     }
     
@@ -130,13 +124,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         switch collisionType {
         case 1:
             objectA.removeFromParentNode()
+            
+            if let index = projectiles.firstIndex(where: { (element) -> Bool in
+                element.node.isEqual(objectA)}) {
+                projectiles.remove(at: index)
+            }
             break
         case 2:
             let projectile = projectiles.first { (element) -> Bool in
                 element.node.isEqual(objectA)
             }
             projectile?.isInsidePlayzone = true
-            print(projectile)
+//            print(projectile)
             break
         default:
             break
@@ -157,11 +156,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         spawnPoint.addChildNode(projectile.node)
         projectiles.append(projectile)
         
-        let velocity = killzone.position.z*1.5
+        // TODO: move action axis X
+        let moveFoward = SCNAction.moveBy(x: 0, y: 15, z:0 , duration: 1)
         
-        let nodeDirection = SCNVector3(killzone.position.x, killzone.position.y, velocity)
-        projectile.node.physicsBody?.applyForce(nodeDirection, asImpulse: true)
-        
+        projectile.addAnimation(movement: moveFoward)
         
         
     }
@@ -178,10 +176,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         node.physicsBody?.categoryBitMask = CollisionCategory.projectilesCategory
         node.physicsBody?.contactTestBitMask = CollisionCategory.playZoneCategory | CollisionCategory.killzoneCategory
         node.physicsBody?.collisionBitMask = 0
-        let projectile = Projectile(node)
         
+        let directions:[UInt] = [1,2,4,8]
+        let direction = UISwipeGestureRecognizer.Direction(rawValue: directions.randomElement() ?? 1)
+        
+        let projectile = Projectile(node, direction)
         return projectile
     }
     
+ 
     
 }
