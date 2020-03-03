@@ -37,10 +37,13 @@ class Projectile: SCNNode {
     }
     
     init(_ node: SCNNode, _ direction: UISwipeGestureRecognizer.Direction = .right) {
-        self.node = node
+        let newNode = node.clone()
+        newNode.geometry = newNode.geometry?.copy() as? SCNGeometry
+        self.node = newNode
         self.direction = direction
         super.init()
         genMaterial()
+        
     }
     
     fileprivate func genMaterial() {
